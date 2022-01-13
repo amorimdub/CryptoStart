@@ -1,4 +1,4 @@
-import HelloWorld from '@src/components/HelloWorld'
+// import HelloWorld from '@src/components/HelloWorld'
 
 import React from 'react'
 import Head from 'next/head'
