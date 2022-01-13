@@ -40,7 +40,8 @@
         "outputs": [
           "dist/**",
           ".next/**",
-          "artifacts/**"
+          "artifacts/**",
+          ".docusaurus/**"
         ]
       },
       "test": {
