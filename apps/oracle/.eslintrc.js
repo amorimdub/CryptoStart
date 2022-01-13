@@ -1,5 +1,5 @@
 module.exports = {
-  ...require('config/eslint-server'),
+  ...require('@cryptostar/config/eslint-server'),
   parserOptions: {
     root: true,
     tsconfigRootDir: __dirname,
