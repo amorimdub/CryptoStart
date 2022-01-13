@@ -10,10 +10,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "hardhat node",
-    "build": "hardhat compile",
+    "build": "hardhat clean && hardhat compile",
     "test": "jest --runInBand",
-    "lint": "npx solhint 'contracts/**/*.sol' --fix",
-    "postinstall": "typechain"
+    "lint": "npx solhint 'contracts/**/*.sol' --fix"
   },
   "devDependencies": {
     "@ethereum-waffle/jest": "^3.3.0",
