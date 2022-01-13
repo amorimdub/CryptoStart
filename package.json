@@ -1,5 +1,5 @@
 {
-  "name": "turborepo-basic-yarn",
+  "name": "cryptostar",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
@@ -39,7 +39,9 @@
         ],
         "outputs": [
           "dist/**",
-          ".next/**"
+          ".next/**",
+          "artifacts/**",
+          ".docusaurus/**"
         ]
       },
       "test": {

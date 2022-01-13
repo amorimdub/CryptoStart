@@ -19,6 +19,7 @@ build
 # misc
 .DS_Store
 *.pem
+.ref
 
 # debug
 npm-debug.log*
