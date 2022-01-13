@@ -1,4 +1,6 @@
 module.exports = {
-  ...require('config/jest-server'),
+  ...require('@cryptostar/config/jest-server'),
   rootDir: '.',
+  name: 'oracle',
+  displayName: 'Oracle',
 }

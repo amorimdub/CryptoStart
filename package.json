@@ -39,7 +39,8 @@
         ],
         "outputs": [
           "dist/**",
-          ".next/**"
+          ".next/**",
+          "artifacts/**"
         ]
       },
       "test": {
