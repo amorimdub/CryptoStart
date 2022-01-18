@@ -11,7 +11,7 @@
     "dev": "turbo run dev --parallel",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "deploy": "sleep 5 && turbo run deploy --scope=@cryptostar/contracts",
+    "deploy": "sleep 5 && 0x3e12586eda92f66b94e5121dba2f6894ff0c7423turbo run deploy --scope=@cryptostar/contracts",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "husky install"
   },

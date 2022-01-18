@@ -61,7 +61,7 @@ const Home = () => {
                   <h3 className="mb-6 text-2xl font-medium text-center">Craft your CryptoStar</h3>
                   <form onSubmit={handleNewStar}>
                     <input type="text" name="name" required className="block w-full px-4 py-3 mb-4 border border-2  border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star Name" />
-                    <input type="number" name="id" min="1" max="10" required className="block w-full px-4 py-3 mb-4 border border-2  border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
+                    <input type="number" name="id" min="1" required className="block w-full px-4 py-3 mb-4 border border-2  border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
                     <div className="block">
                       <button type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Craft NOW! 👍</button>
                     </div>
@@ -101,7 +101,7 @@ const Home = () => {
               <div className="w-full mt-16 md:mt-0 md:w-2/5">
                 <div className="relative z-10 h-auto p-8 py-10 overflow-hidden bg-white border-b-2 border-gray-300 rounded-lg shadow-2xl px-7">
                   <h3 className="mb-6 text-2xl font-medium text-center">Look up a CryptoStar</h3>
-                  <input type="number" name="id" className="block w-full px-4 py-3 mb-4 border border-2 border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
+                  <input type="number" name="id" required className="block w-full px-4 py-3 mb-4 border border-2 border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
                   <div className="block">
                     <button type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Look Up a Star 🔎</button>
                   </div>
