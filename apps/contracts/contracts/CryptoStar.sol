@@ -9,7 +9,7 @@ contract CryptoStar is ERC721 {
     string name;
   }
 
-  constructor() ERC721('CryptoStar', 'CS') {}
+  constructor() ERC721('CryptoStar', 'CST') {}
 
   mapping(uint256 => Star) public tokenIdToStarInfo;
   mapping(uint256 => uint256) public starsForSale;
@@ -32,10 +32,9 @@ contract CryptoStar is ERC721 {
     require(starsForSale[_tokenId] > 0, 'The Star should be up for sale');
     uint256 starCost = starsForSale[_tokenId];
     address ownerAddress = ownerOf(_tokenId);
-    require(msg.value > starCost, 'You need to have enough Ether');
-    transferFrom(ownerAddress, msg.sender, _tokenId);
-    address payable ownerAddressPayable = payable(ownerAddress);
-    ownerAddressPayable.transfer(starCost);
+    require(msg.value >= starCost, 'You need to have enough Ether');
+    _transfer(ownerAddress, msg.sender, _tokenId);
+    payable(ownerAddress).transfer(starCost);
     if (msg.value > starCost) {
       payable(msg.sender).transfer(msg.value - starCost);
     }
@@ -57,8 +56,8 @@ contract CryptoStar is ERC721 {
       'Only the owner of the Star can exchange it'
     );
 
-    transferFrom(ownerAddress1, ownerAddress2, _tokenId1);
-    transferFrom(ownerAddress2, ownerAddress1, _tokenId2);
+    _transfer(ownerAddress1, ownerAddress2, _tokenId1);
+    _transfer(ownerAddress2, ownerAddress1, _tokenId2);
   }
 
   function transferStar(address _to1, uint256 _tokenId) public {

@@ -1,30 +1,108 @@
 // import HelloWorld from '@src/components/HelloWorld'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { ToastContainer, toast } from 'react-toastify';
-
+import { ethers } from 'ethers'
 import 'react-toastify/dist/ReactToastify.css';
+import { connectWallet, getCurrentWalletConnected } from '@src/lib/wallet';
+
+
+import { abi } from '../../../contracts/artifacts/contracts/CryptoStar.sol/CryptoStar.json';
+
+
+console.log(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
+const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
+
 
 const Home = () => {
 
+  const [walletAddress, setWallet] = useState("");
 
 
-  const handleNewStar = async (event: any) => {
+  const addWalletListener = () => {
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setWallet(accounts[0]);
+        } else {
+          setWallet("");
+        }
+      });
+    } else {
+      toast.error("No web3 detected");
+    }
+  }
+
+  useEffect(() => {
+    getCurrentWalletConnected().then(({ address }) => {
+      setWallet(address);
+    });
+    addWalletListener();
+
+  }, []);
+
+  const connectWalletPressed = async (event) => {
     event.preventDefault()
-    const data = Object.fromEntries(new FormData(event.target).entries());
-    // console.log(data)
-    toast.promise(
-      // eslint-disable-next-line no-promise-executor-return
-      new Promise(resolve => setTimeout(resolve, 3000)),
+    await connectWallet();
+  };
+
+  const onMintPressed = async (event) => {
+    event.preventDefault()
+
+    const { name, id } = Object.fromEntries(new FormData(event.target).entries());
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    let contract = new ethers.Contract(contractAddress!, abi, provider)
+    const starName = await contract.lookUptokenIdToStarInfo(Number(id));
+
+    if (starName.length > 0) {
+      toast.error("Star found")
+      return
+    }
+
+    const signer = provider.getSigner()
+    contract = new ethers.Contract(contractAddress!, abi, signer)
+
+    const transaction = await contract.createStar(name, Number(id));
+    await transaction.wait()
+
+    toast.promise(transaction.wait(),
       {
-        pending: `Promise is pending ${data.name}`,
-        success: 'Promise resolved 👌',
-        error: 'Promise rejected 🤯'
+        pending: `Crafting your star: ${name}`,
+        success: 'Star Crafted 👌',
+        error: 'OOpps!! There is an issue 🤯'
       }
     )
+  };
+  const onLookUpPressed = async (event) => {
+    event.preventDefault()
+    const { id } = Object.fromEntries(new FormData(event.target).entries());
 
-  }
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(contractAddress!, abi, provider)
+
+    const starName = await contract.lookUptokenIdToStarInfo(Number(id));
+
+
+    if (starName.length === 0) {
+      toast.error("Star not found")
+      return
+    }
+
+    toast.info(`Star name: ${starName}`)
+
+  };
+
+
+
+  // event.preventDefault()
+  // const data = Object.fromEntries(new FormData(event.target).entries());
+  // // console.log(data)
+
+  // )
+
+
   return (
     <div>
       <Head>
@@ -49,6 +127,16 @@ const Home = () => {
             <div className="container max-w-lg px-4 py-32 mx-auto text-left md:max-w-none md:text-center">
               <h1 className="text-5xl font-extrabold leading-10 tracking-tight text-left text-gray-900 md:text-center sm:leading-none md:text-6xl lg:text-7xl"><span className="inline md:block">Start Crafting Your</span> <span className="relative mt-2 text-transparent bg-clip-text bg-gradient-to-br from-indigo-700 to-indigo-600 md:inline-block">CryptoStar</span></h1>
             </div>
+            <div className="container max-w-lg px-4 mx-auto text-left md:max-w-none md:text-center">
+              <button type="button" onClick={connectWalletPressed} className="mx-auto px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">
+                {walletAddress.length > 0 ? (
+                  `Connected: ${String(walletAddress).substring(0, 6)
+                  }...${String(walletAddress).substring(38)}`
+                ) : (
+                  <span>Connect Wallet  🪙</span>
+                )}
+              </button>
+            </div>
           </div>
         </section >
 
@@ -59,11 +147,11 @@ const Home = () => {
               <div className="w-full mt-16 md:mt-0 md:w-2/5">
                 <div className="relative z-10 h-auto p-8 py-10 overflow-hidden bg-white border-b-2 border-gray-300 rounded-lg shadow-2xl px-7">
                   <h3 className="mb-6 text-2xl font-medium text-center">Craft your CryptoStar</h3>
-                  <form onSubmit={handleNewStar}>
+                  <form onSubmit={onMintPressed}>
                     <input type="text" name="name" required className="block w-full px-4 py-3 mb-4 border border-2  border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star Name" />
                     <input type="number" name="id" min="1" required className="block w-full px-4 py-3 mb-4 border border-2  border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
                     <div className="block">
-                      <button type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Craft NOW! 👍</button>
+                      <button disabled={walletAddress.length === 0} type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Craft NOW! 👍</button>
                     </div>
                   </form>
                 </div>
@@ -101,10 +189,12 @@ const Home = () => {
               <div className="w-full mt-16 md:mt-0 md:w-2/5">
                 <div className="relative z-10 h-auto p-8 py-10 overflow-hidden bg-white border-b-2 border-gray-300 rounded-lg shadow-2xl px-7">
                   <h3 className="mb-6 text-2xl font-medium text-center">Look up a CryptoStar</h3>
-                  <input type="number" name="id" required className="block w-full px-4 py-3 mb-4 border border-2 border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
-                  <div className="block">
-                    <button type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Look Up a Star 🔎</button>
-                  </div>
+                  <form onSubmit={onLookUpPressed}>
+                    <input type="number" name="id" required className="block w-full px-4 py-3 mb-4 border border-2 border-gray-200 rounded-lg focus:ring focus:ring-indigo-700 focus:outline-none" placeholder="Star ID" />
+                    <div className="block">
+                      <button type="submit" className="w-full px-3 py-4 font-medium text-white bg-indigo-700 rounded-lg">Look Up a Star 🔎</button>
+                    </div>
+                  </form>
                 </div>
               </div>
 
@@ -124,7 +214,7 @@ const Home = () => {
       </main >
       <ToastContainer
         position="bottom-center"
-        autoClose={1}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick={false}

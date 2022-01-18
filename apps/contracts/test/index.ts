@@ -1,17 +1,20 @@
+import '@nomiclabs/hardhat-ethers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { Contract } from 'ethers'
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 
 describe('CryptoStar', async () => {
-  let owner1: string, owner2: string
-  let contract: string
+  let owner1: SignerWithAddress
+  let owner2: SignerWithAddress
+  let contract: Contract
   let starId: number
 
   beforeEach(async () => {
     ;[, owner1, owner2] = await ethers.getSigners()
     starId = 1
-
-    const starNotaryV2 = await ethers.getContractFactory('StarNotaryV2')
-    contract = await starNotaryV2.deploy()
+    const CryptoStar = await ethers.getContractFactory('CryptoStar')
+    contract = await CryptoStar.deploy()
     await contract.deployed()
   })
 
@@ -33,10 +36,12 @@ describe('CryptoStar', async () => {
 
   it('Should allow owner1 to get funds after the sale', async () => {
     const sellingPrice = ethers.utils.parseUnits('1', 'ether')
+
     const contractAsOwner1 = await contract.connect(owner1)
     const contractAsOwner2 = await contract.connect(owner2)
     await contractAsOwner1.createStar('star', starId)
     await contractAsOwner1.putStarUpForSale(starId, sellingPrice)
+
     const balanceOfOwner1BeforeTransaction = await owner1.getBalance()
 
     const buyStarTx = await contractAsOwner2.buyStar(starId, {
@@ -76,47 +81,57 @@ describe('CryptoStar', async () => {
     const buyStarTx = await contractAsOwner2.buyStar(starId, {
       value: sellingPrice,
     })
-    const receipt = await buyStarTx.wait()
+    await buyStarTx.wait()
     const balanceOfOwner2AfterTransaction = await owner2.getBalance()
-
-    const gasPrice = buyStarTx.gasPrice.toString()
-    const gasUsed = receipt.gasUsed.toString()
-    const effectiveGasPrice = receipt.effectiveGasPrice.toString()
-    console.log(receipt)
-
-    console.log(
-      Number(balanceOfOwner2BeforeTransaction) -
-      Number(balanceOfOwner2AfterTransaction) -
-      Number(sellingPrice) -
-      Number(gasPrice) -
-      Number(gasUsed),
-    )
 
     expect(Number(balanceOfOwner2BeforeTransaction)).to.greaterThan(
       Number(balanceOfOwner2AfterTransaction) + Number(sellingPrice),
     )
   })
 
-  // it('can add the star name and star symbol properly', async () => {
-  //     // 1. create a Star with different tokenId
-  //     //2. Call the name and symbol properties in your Smart Contract and compare with the name and symbol provided
-  // });
+  it('Should should have a name', async () => {
+    const name = await contract.name()
 
-  // it('lets 2 users exchange stars', async () => {
-  //     // 1. create 2 Stars with different tokenId
-  //     // 2. Call the exchangeStars functions implemented in the Smart Contract
-  //     // 3. Verify that the owners changed
-  // });
+    expect(name).to.equal('CryptoStar')
+  })
 
-  // it('lets a user transfer a star', async () => {
-  //     // 1. create a Star with different tokenId
-  //     // 2. use the transferStar function implemented in the Smart Contract
-  //     // 3. Verify the star owner changed.
-  // });
+  it('Should should have a symbol', async () => {
+    const symbol = await contract.symbol()
 
-  // it('lookUptokenIdToStarInfo test', async () => {
-  //     // 1. create a Star with different tokenId
-  //     // 2. Call your method lookUptokenIdToStarInfo
-  //     // 3. Verify if you Star name is the same
-  // });
+    expect(symbol).to.equal('CST')
+  })
+
+  it('Should let 2 users exchange stars', async () => {
+    const contractAsOwner1 = await contract.connect(owner1)
+    await contractAsOwner1.createStar('star1000', 1000)
+
+    const contractAsOwner2 = await contract.connect(owner2)
+    await contractAsOwner2.createStar('star2000', 2000)
+
+    await contractAsOwner2.exchangeStars(1000, 2000)
+
+    const newOwnerOfStar1000 = await contract.ownerOf(1000)
+    expect(newOwnerOfStar1000).to.equal(owner2.address)
+
+    const newOwnerOfStar2000 = await contract.ownerOf(2000)
+    expect(newOwnerOfStar2000).to.equal(owner1.address)
+  })
+
+  it('lets a user transfer a star', async () => {
+    const contractAsOwner1 = await contract.connect(owner1)
+    await contractAsOwner1.createStar('star29', 29)
+
+    await contractAsOwner1.transferStar(owner2.address, 29)
+
+    expect(await contract.ownerOf(29)).to.equal(owner2.address)
+  })
+
+  it('Should add the star name properly', async () => {
+    const contractAsOwner1 = await contract.connect(owner1)
+    await contractAsOwner1.createStar('star', 50)
+
+    const starName = await contract.tokenIdToStarInfo(50)
+
+    expect(starName).to.equal('star')
+  })
 })

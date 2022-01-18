@@ -1,12 +1,16 @@
 {
   "name": "@cryptostar/contracts",
   "version": "0.0.0",
+  "files": [
+    "artefacts/**/CryptoStar.json"
+  ],
   "scripts": {
     "dev": "hardhat node",
     "build": "hardhat clean && hardhat compile",
     "test": "hardhat test",
     "lint": "npx solhint 'contracts/**/*.sol' --fix",
-    "deploy": "hardhat run scripts/deploy.ts --network localhost"
+    "deploy": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:test": "hardhat run scripts/deploy.ts --network rinkeby"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
